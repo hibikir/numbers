@@ -6,14 +6,15 @@ import org.scalatest.FunSpec
 class NumbersSpec extends FunSpec{
 
   it("produces some tape"){
-    println(Numbers.renderString("1234567890"))
+    val renderedString = Numbers.renderString("1234567890")
+    assert(renderedString.split('\n').size == 3)
   }
 
   it("parses a digit"){
-    println(Numbers.parseDigit(List(" _ ","| |","|_|")))
+    assert(Numbers.parseDigit(List(" _ ","| |","|_|")) =='0')
   }
 
   it("parses a row"){
-    println(Numbers.parseDigit(List(" _ ","| |","|_|")))
+    assert(Numbers.parseLine(List(" _  _  _ ","| || |  |","|_||_|  |")) == "007")
   }
 }

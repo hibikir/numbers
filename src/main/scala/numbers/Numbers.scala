@@ -21,8 +21,8 @@ object Numbers {
 
   def parseDigit(r:Rendered) :Char = {
     renderedNumbers.indexOf(r) match {
-      case -1 =>'?'
-      case n:Int =>n.toString.charAt(0)
+      case -1 => '?'
+      case n:Int => n.toString.charAt(0)
     }
   }
 
