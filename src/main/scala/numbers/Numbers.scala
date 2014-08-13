@@ -19,8 +19,6 @@ object Numbers {
     toRenderedDigits(rows)
   }
   
-  private def splitByCharacter(row:String):List[String] = row.grouped(character_width).toList
-
   def parseDigit(r:RenderedDigit) :Char = {
     allRenderedDigits.indexOf(r) match {
       case -1 => 
@@ -29,6 +27,8 @@ object Numbers {
       case n:Int => n.toString.charAt(0)
     }
   }
+
+  private def splitByCharacter(row:String):List[String] = row.grouped(character_width).toList
 
   private def toRenderedDigits(s:RenderedStream) :Seq[RenderedDigit] = {
      s.map(splitByCharacter).transpose
@@ -57,9 +57,20 @@ object Numbers {
   //def renderString(s:String) = s.toCharArray.toList.map(c=>renderDigit(c)).transpose.map(xs=>xs.mkString("")).mkString("\n")
 }
 
+case class Account(accountId: String){
+  val allCharactersValid = !accountId.contains('?')
+  val hasValidChecksum:Boolean = {
+    if(!allCharactersValid) false
+    else{
+      true
+    }
+  }
+  val isValid = hasValidChecksum
+}
+
 object FileParser{
-  def parse(source:Source) = {
+  def parse(source:Source):Seq[Account] = {
     val lines = source.getLines()
-    lines.grouped(4).foreach{xs => println( Numbers.parseLine(xs.take(3)))}
+    lines.grouped(4).map{xs => Account(Numbers.parseLine(xs.take(3)))}.toList
   }
 }

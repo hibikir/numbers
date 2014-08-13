@@ -25,7 +25,10 @@ class NumbersSpec extends FunSpec{
 
   it("parses a file"){
     val file = Source.fromURL(getClass.getResource("/testfile.txt"))
-    FileParser.parse(file)
+    val parsed = FileParser.parse(file)
     file.close()
+    assert(parsed.size == 14)
+    assert(parsed(0).isValid)
+    assert(!parsed(13).isValid)
   }
 }
