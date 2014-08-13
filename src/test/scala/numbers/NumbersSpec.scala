@@ -15,7 +15,7 @@ class NumbersSpec extends FunSpec{
   it("parses a row"){
     assert(Numbers.parseLine(List(" _  _  _  _  _  _  _  _  _ ",
                                   "| || |  || || |  || || |  |",
-                                  "|_||_|  ||_||_|  ||_||_|  |")) == "007007007")
+                                  "|_||_|  ||_||_|  ||_||_|  |")) == Some("007007007"))
   }
 
   it("parses a file"){

@@ -1,5 +1,7 @@
 package numbers
 
+import numbers.Numbers.RenderedAccountNumber
+
 object Numbers {
 
   type RenderedDigit = Seq[String]
@@ -17,10 +19,10 @@ object Numbers {
     toRenderedDigits(rows)
   }
 
-  def parseLine(r:RenderedAccountNumber) :String =
+  def parseLine(r:RenderedAccountNumber) :Option[String] =
     validateRecordLength(r) match {
-      case Left(x) => println(x); ""
-      case Right(x) => parseValidLine(x)
+      case Left(x) => println(x); None
+      case Right(x) => Some(parseValidLine(x))
     }
   
   private def parseValidLine(r:RenderedAccountNumber) :String = {
@@ -68,5 +70,9 @@ case class Account(accountId: String){
     val suffix = if(!isLegible) "ILL" else if(!isValid) "ERR" else ""
     accountId + "\t"+ suffix
   }
+}
+
+object Account {
+  def parse(r:RenderedAccountNumber) :Option[Account] = Numbers.parseLine(r).map(x=>Account(x))
 }
 
