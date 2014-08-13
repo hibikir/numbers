@@ -12,10 +12,10 @@ object Numbers {
                         x| |  | _| _||_||_ |_   ||_||_|
                         x|_|  ||_  _|  | _||_|  ||_| _|""".stripMargin('x')
 
-  val blank:RenderedDigit = List("   ","   ","   ")
+  val blank:RenderedDigit = Seq("   ","   ","   ")
 
   private val allRenderedDigits:Seq[RenderedDigit] = {
-    val rows = spriteSheet.split("\n").toList
+    val rows = spriteSheet.split("\n").toSeq
     toRenderedDigits(rows)
   }
 
@@ -39,7 +39,7 @@ object Numbers {
     }
   }
 
-  private def splitByCharacter(row:String):List[String] = row.grouped(character_width).toList
+  private def splitByCharacter(row:String):Seq[String] = row.grouped(character_width).toSeq
 
   private def toRenderedDigits(s:RenderedAccountNumber) :Seq[RenderedDigit] = {
      s.map(splitByCharacter).transpose
