@@ -6,11 +6,6 @@ import scala.io.Source
 
 class NumbersSpec extends FunSpec{
 
-  //it("produces some tape"){
-  //  val renderedString = Numbers.renderString("1234567890")
-  //  assert(renderedString.split('\n').size == 3)
-  //}
-
   it("parses a digit"){
     assert(Numbers.parseDigit(List(" _ ",
                                    "| |",

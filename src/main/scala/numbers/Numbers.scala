@@ -1,12 +1,9 @@
 package numbers
 
-import scala.io.Source
-import numbers.Numbers.RenderedStream
-
 object Numbers {
 
   type RenderedDigit = Seq[String]
-  type RenderedStream = Seq[String]
+  type RenderedAccountNumber = Seq[String]
   val character_width = 3
   val characters_per_line = 9
   val spriteSheet = """ x _     _  _     _  _  _  _  _ 
@@ -19,7 +16,18 @@ object Numbers {
     val rows = spriteSheet.split("\n").toList
     toRenderedDigits(rows)
   }
+
+  def parseLine(r:RenderedAccountNumber) :String =
+    validateRecordLength(r) match {
+      case Left(x) => println(x); ""
+      case Right(x) => parseValidLine(x)
+    }
   
+  private def parseValidLine(r:RenderedAccountNumber) :String = {
+    val chunkedLine = toRenderedDigits(r)
+    chunkedLine.map(parseDigit).mkString
+  }
+
   def parseDigit(r:RenderedDigit) :Char = {
     allRenderedDigits.indexOf(r) match {
       case -1 => 
@@ -31,35 +39,20 @@ object Numbers {
 
   private def splitByCharacter(row:String):List[String] = row.grouped(character_width).toList
 
-  private def toRenderedDigits(s:RenderedStream) :Seq[RenderedDigit] = {
+  private def toRenderedDigits(s:RenderedAccountNumber) :Seq[RenderedDigit] = {
      s.map(splitByCharacter).transpose
   }
   
-  def validateRecordLength(s:RenderedStream):Either[String,RenderedStream] = {
+  def validateRecordLength(s:RenderedAccountNumber):Either[String,RenderedAccountNumber] = {
     s.find(_.size!=character_width * characters_per_line) match {
       case Some(x) => Left("Line of inappropriate size\n"+x)
       case _ => Right(s)
     }
   }
-  
-  def parseLine(r:RenderedStream) :String = 
-    validateRecordLength(r) match {
-      case Left(x) => println(x); ""
-      case Right(x) => parseValidLine(x)
-    }
-
-
-  private def parseValidLine(r:RenderedStream) :String = {
-    val chunkedLine = toRenderedDigits(r)
-    chunkedLine.map(parseDigit).mkString
-  }
-  
-  //def renderDigit(c:Char):Rendered = if(c.isDigit) renderedNumbers(c.asDigit) else blank
-  //def renderString(s:String) = s.toCharArray.toList.map(c=>renderDigit(c)).transpose.map(xs=>xs.mkString("")).mkString("\n")
-}
+ }
 
 case class Account(accountId: String){
-  val isLegible = !accountId.contains('?')
+  val isLegible = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
   val isValid:Boolean = {
     if(!isLegible) false
     else{
@@ -77,14 +70,3 @@ case class Account(accountId: String){
   }
 }
 
-object FileParser{
-  val rows_per_line = 4
-  def trimVerticalPadding(lines:Seq[String]):RenderedStream = lines.take(Numbers.blank.size)
-  
-  def parse(source:Source):Seq[Account] = {
-    val lines = source.getLines()
-    lines.grouped(rows_per_line).map{xs => 
-      Account(Numbers.parseLine(trimVerticalPadding(xs)))
-    }.toList
-  }
-}
