@@ -1,36 +1,65 @@
 package numbers
 
+import scala.io.Source
 
 object Numbers {
 
-
-  type Rendered = Seq[String]
+  type RenderedDigit = Seq[String]
+  type RenderedStream = Seq[String]
   val character_width = 3
-  val spriteSheet = """ x _     _  _     _  _  _  _  _
+  val characters_per_line = 9
+  val spriteSheet = """ x _     _  _     _  _  _  _  _ 
                         x| |  | _| _||_||_ |_   ||_||_|
                         x|_|  ||_  _|  | _||_|  ||_| _|""".stripMargin('x')
 
-  val blank:Rendered = List("   ","   ","   ")
+  val blank:RenderedDigit = List("   ","   ","   ")
 
-  private def splitByCharacter(row:String) = row.grouped(character_width).toList
-
-  val renderedNumbers:List[Rendered] = {
+  private val allRenderedDigits:Seq[RenderedDigit] = {
     val rows = spriteSheet.split("\n").toList
-    rows.map(splitByCharacter).transpose
+    toRenderedDigits(rows)
   }
+  
+  private def splitByCharacter(row:String):List[String] = row.grouped(character_width).toList
 
-  def parseDigit(r:Rendered) :Char = {
-    renderedNumbers.indexOf(r) match {
-      case -1 => '?'
+  def parseDigit(r:RenderedDigit) :Char = {
+    allRenderedDigits.indexOf(r) match {
+      case -1 => 
+        println(r.mkString("\n")+" did not match any numbers")
+        '?'
       case n:Int => n.toString.charAt(0)
     }
   }
 
-  def parseLine(r:Rendered) :String = {
-    r.map(splitByCharacter).transpose.map(parseDigit).mkString
+  private def toRenderedDigits(s:RenderedStream) :Seq[RenderedDigit] = {
+     s.map(splitByCharacter).transpose
   }
+  
+  def validateRecordLength(s:RenderedStream):Either[String,RenderedStream] = {
+    s.find(_.size!=character_width * characters_per_line) match {
+      case Some(x) => Left("Line of inappropriate size\n"+x)
+      case _ => Right(s)
+    }
+  }
+  
+  def parseLine(r:RenderedStream) :String = 
+    validateRecordLength(r) match {
+      case Left(x) => println(x); ""
+      case Right(x) => parseValidLine(x)
+    }
 
-  def renderDigit(c:Char):Rendered = if(c.isDigit) renderedNumbers(c.asDigit) else blank
 
-  def renderString(s:String) = s.toCharArray.toList.map(c=>renderDigit(c)).transpose.map(xs=>xs.mkString("")).mkString("\n")
+  private def parseValidLine(r:RenderedStream) :String = {
+    val chunkedLine = toRenderedDigits(r)
+    chunkedLine.map(parseDigit).mkString
+  }
+  
+  //def renderDigit(c:Char):Rendered = if(c.isDigit) renderedNumbers(c.asDigit) else blank
+  //def renderString(s:String) = s.toCharArray.toList.map(c=>renderDigit(c)).transpose.map(xs=>xs.mkString("")).mkString("\n")
+}
+
+object FileParser{
+  def parse(source:Source) = {
+    val lines = source.getLines()
+    lines.grouped(4).foreach{xs => println( Numbers.parseLine(xs.take(3)))}
+  }
 }
