@@ -58,9 +58,9 @@ object Numbers {
 }
 
 case class Account(accountId: String){
-  val allCharactersValid = !accountId.contains('?')
-  val hasValidChecksum:Boolean = {
-    if(!allCharactersValid) false
+  val isLegible = !accountId.contains('?')
+  val isValid:Boolean = {
+    if(!isLegible) false
     else{
       val checksum:Int = accountId.toCharArray.zip(1.to(9).reverse).map{
         case (char,pos) => 
@@ -69,7 +69,11 @@ case class Account(accountId: String){
       checksum %11 ==0
     }
   }
-  val isValid = hasValidChecksum
+  
+  val tabulatedString:String  = {
+    val suffix = if(!isLegible) "ILL" else if(!isValid) "ERR" else ""
+    accountId + "\t"+ suffix
+  }
 }
 
 object FileParser{

@@ -35,6 +35,18 @@ class NumbersSpec extends FunSpec{
   it("calculates checksums correctly"){
     assert(Account("457508000").isValid)
     assert(!Account("664371495").isValid)
-
+  }
+  
+  it("outputs report lines"){
+    assert(Account("457508000").tabulatedString == "457508000\t")
+    assert(Account("664371495").tabulatedString == "664371495\tERR")
+    assert(Account("45750?000").tabulatedString == "45750?000\tILL")
+  }
+  
+  it("outputs the given file"){
+    val file = Source.fromURL(getClass.getResource("/testfile.txt"))
+    val parsed = FileParser.parse(file)
+    file.close()
+    println(parsed.map(_.tabulatedString).mkString("\n"))
   }
 }
