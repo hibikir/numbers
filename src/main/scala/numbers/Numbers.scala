@@ -1,6 +1,7 @@
 package numbers
 
 import scala.io.Source
+import numbers.Numbers.RenderedStream
 
 object Numbers {
 
@@ -77,8 +78,13 @@ case class Account(accountId: String){
 }
 
 object FileParser{
+  val rows_per_line = 4
+  def trimVerticalPadding(lines:Seq[String]):RenderedStream = lines.take(Numbers.blank.size)
+  
   def parse(source:Source):Seq[Account] = {
     val lines = source.getLines()
-    lines.grouped(4).map{xs => Account(Numbers.parseLine(xs.take(3)))}.toList
+    lines.grouped(rows_per_line).map{xs => 
+      Account(Numbers.parseLine(trimVerticalPadding(xs)))
+    }.toList
   }
 }
