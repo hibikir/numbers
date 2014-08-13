@@ -45,7 +45,7 @@ object Numbers {
      s.map(splitByCharacter).transpose
   }
   
-  def validateRecordLength(s:RenderedAccountNumber):Either[String,RenderedAccountNumber] = {
+  private def validateRecordLength(s:RenderedAccountNumber):Either[String,RenderedAccountNumber] = {
     s.find(_.size!=character_width * characters_per_line) match {
       case Some(x) => Left("Line of inappropriate size\n"+x)
       case _ => Right(s)
@@ -55,6 +55,7 @@ object Numbers {
 
 case class Account(accountId: String){
   val isLegible = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
+  
   val isValid:Boolean = {
     if(!isLegible) false
     else{
@@ -62,7 +63,7 @@ case class Account(accountId: String){
         case (char,pos) => 
           char.asDigit*pos
        }.sum
-      checksum %11 ==0
+      checksum %11 == 0
     }
   }
   
