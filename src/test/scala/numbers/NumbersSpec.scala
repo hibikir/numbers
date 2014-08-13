@@ -31,4 +31,10 @@ class NumbersSpec extends FunSpec{
     assert(parsed(0).isValid)
     assert(!parsed(13).isValid)
   }
+  
+  it("calculates checksums correctly"){
+    assert(Account("457508000").isValid)
+    assert(!Account("664371495").isValid)
+
+  }
 }

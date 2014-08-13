@@ -62,7 +62,11 @@ case class Account(accountId: String){
   val hasValidChecksum:Boolean = {
     if(!allCharactersValid) false
     else{
-      true
+      val checksum:Int = accountId.toCharArray.zip(1.to(9).reverse).map{
+        case (char,pos) => 
+          char.asDigit*pos
+       }.sum
+      checksum %11 ==0
     }
   }
   val isValid = hasValidChecksum
