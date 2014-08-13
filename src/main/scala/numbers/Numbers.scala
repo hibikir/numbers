@@ -7,12 +7,12 @@ object Numbers {
   type RenderedDigit = Seq[String]
   type RenderedAccountNumber = Seq[String]
   val character_width = 3
+  val character_height = 3
   val characters_per_line = 9
-  val spriteSheet = """ x _     _  _     _  _  _  _  _ 
-                        x| |  | _| _||_||_ |_   ||_||_|
-                        x|_|  ||_  _|  | _||_|  ||_| _|""".stripMargin('x')
-
-  val blank:RenderedDigit = Seq("   ","   ","   ")
+  private val spriteSheet = 
+    """ x _     _  _     _  _  _  _  _ 
+        x| |  | _| _||_||_ |_   ||_||_|
+        x|_|  ||_  _|  | _||_|  ||_| _|""".stripMargin('x')
 
   private val allRenderedDigits:Seq[RenderedDigit] = {
     val rows = spriteSheet.split("\n").toSeq
