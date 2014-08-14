@@ -10,7 +10,10 @@ object FileParser{
   def parse(source:Source):Seq[Account] = {
     val lines = source.getLines()
     lines.grouped(rows_per_line).map{xs =>
-      Account.parse(trimVerticalPadding(xs))
+      Account.parse(trimVerticalPadding(xs)) match{
+        case Right(x) =>Some(x)
+        case Left(x) =>println(x); None  
+      }
     }.flatten.toList
   }
 }

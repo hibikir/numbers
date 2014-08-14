@@ -14,16 +14,14 @@ object Numbers {
         x| |  | _| _||_||_ |_   ||_||_|
         x|_|  ||_  _|  | _||_|  ||_| _|""".stripMargin('x')
 
-  private val allRenderedDigits:Seq[RenderedDigit] = {
+  val allRenderedDigits:Seq[RenderedDigit] = {
     val rows = spriteSheet.split("\n").toSeq
     toRenderedDigits(rows)
   }
 
-  def parseLine(r:RenderedAccountNumber) :Option[String] =
-    validateRecordLength(r) match {
-      case Left(x) => println(x); None
-      case Right(x) => Some(parseValidLine(x))
-    }
+  def parseLine(r:RenderedAccountNumber) :Either[String,String] =
+    validateRecordLength(r).right.map(x=>parseValidLine(x))
+    
   
   private def parseValidLine(r:RenderedAccountNumber) :String = {
     val chunkedLine = toRenderedDigits(r)
@@ -74,6 +72,6 @@ case class Account(accountId: String){
 }
 
 object Account {
-  def parse(r:RenderedAccountNumber) :Option[Account] = Numbers.parseLine(r).map(x=>Account(x))
+  def parse(r:RenderedAccountNumber) :Either[String,Account] = Numbers.parseLine(r).right.map(x=>Account(x))
 }
 

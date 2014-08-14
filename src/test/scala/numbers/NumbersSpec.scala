@@ -18,7 +18,7 @@ class NumbersSpec extends FunSpec {
       assert(Numbers.parseLine(List(
           " _  _  _  _  _  _  _  _  _ ",
           "| || |  || || |  || || |  |",
-          "|_||_|  ||_||_|  ||_||_|  |")) == Some("007007007"))
+          "|_||_|  ||_||_|  ||_||_|  |")) == Right("007007007"))
     }
 
   }
