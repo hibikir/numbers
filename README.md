@@ -10,7 +10,8 @@ The following format is created by the machine:
 ```
     _  _     _  _  _  _  _
   | _| _||_||_ |_   ||_||_|
-  ||_  _|  | _||_|  ||_| _| ```
+  ||_  _|  | _||_|  ||_| _| 
+```
                            
 Each entry is 4 lines long, and each line has 27 characters. The first 3 lines of each entry contain an account number written using pipes and underscores, and the fourth line is blank.
 
