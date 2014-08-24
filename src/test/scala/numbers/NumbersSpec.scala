@@ -21,6 +21,16 @@ class NumbersSpec extends FunSpec {
           "|_||_|  ||_||_|  ||_||_|  |")) == Right("007007007"))
     }
 
+    
+    it("finds possible mutations on a digit"){
+      val digit = List(
+        " _ ",
+        "| |",
+        " _|")
+ 
+      assert(Numbers.laxMatches(digit) === Seq('0','9'))
+      
+    }
   }
 
   describe("Account validation") {

@@ -1,5 +1,6 @@
-An implementation of the Bank OCR kata
+Bank OCR kata
 =======
+This is my implementation of this generic kata. Following is a slightly modified version of the original instructions.
 
 #Bank OCR
 Your manager has recently purchased a machine that assists in reading letters and faxes sent in by branch offices. The machine scans the paper documents, and produces a file with a number of entries. You will write a program to parse this file.

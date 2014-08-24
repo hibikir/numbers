@@ -49,6 +49,32 @@ object Numbers {
       case _ => Right(s)
     }
   }
+  
+  private def mutateCharacter(c:Char) :Seq[Char] = {
+    c match {
+      case ' ' => Seq('_','|')
+      case '_' | '|' => Seq(' ')  
+    }
+  }
+  
+  private def mutateDigit(digit:RenderedDigit) :Seq[RenderedDigit]  = {
+    for(h<-0 until character_height;
+        w<-0 until character_width;
+        ch<-mutateCharacter(digit(h)(w))) yield{
+      val newRow = digit(h).patch(w,Seq(ch),1)
+      digit.patch(h,Seq(newRow),1)
+    }
+  }
+  
+  def laxMatches(digit:RenderedDigit):Seq[Char] = fuzzyDigitMap(digit)
+  
+  private lazy val fuzzyDigitMap:Map[RenderedDigit,Seq[Char]] = {
+    case class FuzzyTuple(digit:Char,renderedDigit:RenderedDigit)
+    
+    val fuzzyTuples = for(d<-allRenderedDigits;
+                          fuzzy<-mutateDigit(d)) yield FuzzyTuple(allRenderedDigits.indexOf(d).toString.charAt(0),fuzzy)
+    fuzzyTuples.groupBy(_.renderedDigit).mapValues(x=>x.map(_.digit))
+  }
  }
 
 case class Account(accountId: String){
@@ -61,7 +87,7 @@ case class Account(accountId: String){
         case (char,pos) => 
           char.asDigit*pos
        }.sum
-      checksum %11 == 0
+      checksum % 11 == 0
     }
   }
   

@@ -39,7 +39,8 @@ class NumbersPropertySpec extends path.FunSpec with GeneratorDrivenPropertyCheck
           account.isLeft === true
         }
         else{
-          account.right.get.isLegible === (params.nInvalid==0)
+          val shouldBeLegible = params.nInvalid==0
+          account.right.get.isLegible === shouldBeLegible
         }
       }   
   }
