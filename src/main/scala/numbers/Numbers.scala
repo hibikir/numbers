@@ -21,8 +21,11 @@ object Numbers {
 
   def parseLine(r:RenderedAccountNumber) :Either[String,String] =
     validateRecordLength(r).right.map(x=>parseValidLine(x))
-    
-  
+
+  def parseLineToRenderedDigits(r:RenderedAccountNumber) :Either[String,Seq[RenderedDigit]] =
+    validateRecordLength(r).right.map(x=>toRenderedDigits(x))
+
+
   private def parseValidLine(r:RenderedAccountNumber) :String = {
     val chunkedLine = toRenderedDigits(r)
     chunkedLine.map(parseDigit).mkString
@@ -78,18 +81,9 @@ object Numbers {
  }
 
 case class Account(accountId: String){
-  val isLegible = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
+  val isLegible = Account.isLegible(accountId)
   
-  val isValid:Boolean = {
-    if(!isLegible) false
-    else{
-      val checksum:Int = accountId.toCharArray.zip(1.to(9).reverse).map{
-        case (char,pos) => 
-          char.asDigit*pos
-       }.sum
-      checksum % 11 == 0
-    }
-  }
+  val isValid:Boolean = Account.isValid(accountId)
   
   val tabulatedString:String  = {
     val suffix = if(!isLegible) "ILL" else if(!isValid) "ERR" else ""
@@ -98,6 +92,20 @@ case class Account(accountId: String){
 }
 
 object Account {
-  def parse(r:RenderedAccountNumber) :Either[String,Account] = Numbers.parseLine(r).right.map(x=>Account(x))
+  def parse(r:RenderedAccountNumber) :Either[String,Account] = Numbers.parseLine(r).right.map{x=>
+    Account(x)
+  }
+  
+  private def isLegible(accountId:String) = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
+  private def isValid(accountId:String) = {
+    if(!isLegible(accountId)) false
+    else{
+      val checksum:Int = accountId.toCharArray.zip(1.to(9).reverse).map{
+        case (char,pos) =>
+          char.asDigit*pos
+      }.sum
+      checksum % 11 == 0
+    }
+  }
 }
 
