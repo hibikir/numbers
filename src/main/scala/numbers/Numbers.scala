@@ -1,6 +1,6 @@
 package numbers
 
-import numbers.Numbers.RenderedAccountNumber
+import numbers.Numbers.{RenderedDigit, RenderedAccountNumber}
 
 object Numbers {
 
@@ -19,17 +19,8 @@ object Numbers {
     toRenderedDigits(rows)
   }
 
-  def parseLine(r:RenderedAccountNumber) :Either[String,String] =
-    validateRecordLength(r).right.map(x=>parseValidLine(x))
-
-  def parseLineToRenderedDigits(r:RenderedAccountNumber) :Either[String,Seq[RenderedDigit]] =
+  def parseLine(r:RenderedAccountNumber) :Either[String,Seq[RenderedDigit]] =
     validateRecordLength(r).right.map(x=>toRenderedDigits(x))
-
-
-  private def parseValidLine(r:RenderedAccountNumber) :String = {
-    val chunkedLine = toRenderedDigits(r)
-    chunkedLine.map(parseDigit).mkString
-  }
 
   def parseDigit(r:RenderedDigit) :Char = {
     allRenderedDigits.indexOf(r) match {
@@ -70,33 +61,54 @@ object Numbers {
   }
   
   def laxMatches(digit:RenderedDigit):Seq[Char] = fuzzyDigitMap(digit)
-  
+  def laxMatches(char:Char):Seq[Char] = fuzzyDigitMap(allRenderedDigits(char.asDigit))
+
   private lazy val fuzzyDigitMap:Map[RenderedDigit,Seq[Char]] = {
     case class FuzzyTuple(digit:Char,renderedDigit:RenderedDigit)
     
     val fuzzyTuples = for(d<-allRenderedDigits;
                           fuzzy<-mutateDigit(d)) yield FuzzyTuple(allRenderedDigits.indexOf(d).toString.charAt(0),fuzzy)
-    fuzzyTuples.groupBy(_.renderedDigit).mapValues(x=>x.map(_.digit))
+    fuzzyTuples.groupBy(_.renderedDigit).mapValues(x=>x.map(_.digit)).withDefaultValue(Seq())
   }
  }
 
-case class Account(accountId: String){
+case class Account(accountId: String,digits:Seq[RenderedDigit],alternatives:Seq[String] = Seq()){
   val isLegible = Account.isLegible(accountId)
   
   val isValid:Boolean = Account.isValid(accountId)
   
   val tabulatedString:String  = {
-    val suffix = if(!isLegible) "ILL" else if(!isValid) "ERR" else ""
+    val suffix = if(alternatives.nonEmpty) "AMB " +alternatives 
+                else if(!isLegible) "ILL" 
+                else if(!isValid) "ERR" else ""
     accountId + "\t"+ suffix
   }
 }
 
 object Account {
   def parse(r:RenderedAccountNumber) :Either[String,Account] = Numbers.parseLine(r).right.map{x=>
-    Account(x)
+    
+    val chars = x.map(Numbers.parseDigit).mkString
+    if (isValid(chars)) Account(chars,x) 
+    else if(isLegible(chars)){
+      val alternates = getAlternates(chars)
+      if(alternates.isEmpty) Account(chars,x)
+      else if(alternates.size == 1) Account(alternates.head,x)
+      else Account (chars,x,alternates)
+    }
+    else Account(chars,x)
   }
   
+  def getAlternates(accountNumber: String) =
+    for(i<-0.until(accountNumber.length);
+        d<-Numbers.laxMatches(accountNumber(i))
+        if isValid(accountNumber.patch(i,Seq(d),1)
+        )) yield accountNumber.patch(i,Seq(d),1)
+
+
   private def isLegible(accountId:String) = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
+  private def mightBecomeLegible(accountId:String) = accountId.size == Numbers.characters_per_line && accountId.count(_=='?')<1
+
   private def isValid(accountId:String) = {
     if(!isLegible(accountId)) false
     else{

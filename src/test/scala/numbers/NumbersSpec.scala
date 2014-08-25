@@ -18,7 +18,7 @@ class NumbersSpec extends FunSpec {
       assert(Numbers.parseLine(List(
           " _  _  _  _  _  _  _  _  _ ",
           "| || |  || || |  || || |  |",
-          "|_||_|  ||_||_|  ||_||_|  |")) == Right("007007007"))
+          "|_||_|  ||_||_|  ||_||_|  |")).right.map(_.map(Numbers.parseDigit).mkString) == Right("007007007"))
     }
 
     
@@ -35,14 +35,18 @@ class NumbersSpec extends FunSpec {
 
   describe("Account validation") {
     it("calculates checksums correctly") {
-      assert(Account("457508000").isValid)
-      assert(!Account("664371495").isValid)
+      assert(Account("457508000",Seq()).isValid)
+      assert(!Account("664371495",Seq()).isValid)
     }
 
     it("outputs report lines") {
-      assert(Account("457508000").tabulatedString == "457508000\t")
-      assert(Account("664371495").tabulatedString == "664371495\tERR")
-      assert(Account("45750?000").tabulatedString == "45750?000\tILL")
+      assert(Account("457508000",Seq()).tabulatedString == "457508000\t")
+      assert(Account("664371495",Seq()).tabulatedString == "664371495\tERR")
+      assert(Account("45750?000",Seq()).tabulatedString == "45750?000\tILL")
+    }
+    
+    it("figures out alternatives with correct checksums"){
+      assert(Account.getAlternates("490067715").toSet == Set("490067115", "490067719", "490867715"))
     }
   }
 
