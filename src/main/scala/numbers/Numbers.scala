@@ -72,13 +72,13 @@ object Numbers {
   }
  }
 
-case class Account(accountId: String,digits:Seq[RenderedDigit],alternatives:Seq[String] = Seq()){
+class Account private(val accountId: String,val digits:Seq[RenderedDigit],val alternatives:Seq[String]){
   val isLegible = Account.isLegible(accountId)
   
   val isValid:Boolean = Account.isValid(accountId)
   
   val tabulatedString:String  = {
-    val suffix = if(alternatives.nonEmpty) "AMB " +alternatives 
+    val suffix = if(alternatives.nonEmpty) "AMB " +alternatives.mkString(" ")
                 else if(!isLegible) "ILL" 
                 else if(!isValid) "ERR" else ""
     accountId + "\t"+ suffix
@@ -86,15 +86,24 @@ case class Account(accountId: String,digits:Seq[RenderedDigit],alternatives:Seq[
 }
 
 object Account {
+  
+  def apply(original: String,digits:Seq[RenderedDigit],alternatives:Seq[String] = Seq()) :Account = {
+    if(alternatives.isEmpty) new Account(original,digits,Seq())
+    else if(alternatives.size==1) new Account(alternatives.head,digits,Seq())
+    else new Account(original,digits,alternatives)
+  }
+  
   def parse(r:RenderedAccountNumber) :Either[String,Account] = Numbers.parseLine(r).right.map{x=>
     
     val chars = x.map(Numbers.parseDigit).mkString
     if (isValid(chars)) Account(chars,x) 
     else if(isLegible(chars)){
-      val alternates = getAlternates(chars)
-      if(alternates.isEmpty) Account(chars,x)
-      else if(alternates.size == 1) Account(alternates.head,x)
-      else Account (chars,x,alternates)
+      Account(chars,x,getAlternates(chars))
+    }
+    else if(mightBecomeLegible(chars)){
+      val idx = chars.indexOf('?')
+      val alternates = Numbers.laxMatches(x(idx)).map(c=>chars.patch(idx,Seq(c),1)).filter(isValid)
+      Account(chars,x,alternates)  
     }
     else Account(chars,x)
   }
@@ -107,7 +116,7 @@ object Account {
 
 
   private def isLegible(accountId:String) = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
-  private def mightBecomeLegible(accountId:String) = accountId.size == Numbers.characters_per_line && accountId.count(_=='?')<1
+  private def mightBecomeLegible(accountId:String) = accountId.size == Numbers.characters_per_line && accountId.count(_=='?')<=1
 
   private def isValid(accountId:String) = {
     if(!isLegible(accountId)) false

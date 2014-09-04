@@ -48,6 +48,14 @@ class NumbersSpec extends FunSpec {
     it("figures out alternatives with correct checksums"){
       assert(Account.getAlternates("490067715").toSet == Set("490067115", "490067719", "490867715"))
     }
+
+    it("when an invalid scan has alternatives, it picks the one with the right checksum"){
+      assert(Account.parse(List(
+        " _  _  _  _  _  _  _  _  _ ",
+        "|_||_||_||_||_||_||_||_||_|",
+        "|_  _| _| _| _| _| _| _| _|")).right.get.accountId === "899999999")
+
+    }
   }
 
   describe("File Parsing") {
