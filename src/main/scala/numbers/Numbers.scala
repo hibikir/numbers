@@ -72,22 +72,51 @@ object Numbers {
   }
  }
 
-class Account private(val accountId: String,val digits:Seq[RenderedDigit],val alternatives:Seq[String]){
-  val isLegible = Account.isLegible(accountId)
+case class AccountId(id:String){
   
-  val isValid:Boolean = Account.isValid(accountId)
+  val isLegible = id.size == Numbers.characters_per_line && !id.contains('?')
+  val mightBecomeLegible = id.size == Numbers.characters_per_line && id.count(_=='?')<=1
+  
+  val isValid = {
+    if(!isLegible) false
+    else{
+      val checksum:Int = id.toCharArray.zip(1.to(9).reverse).map{
+        case (char,pos) =>
+          char.asDigit*pos
+      }.sum
+      checksum % 11 == 0
+    }
+  }
+  
+  def patch(idx:Int, c:Char) = new AccountId(id.patch(idx,Seq(c),1))
+
+  def findSimilarAccounts():Seq[AccountId] =
+    for(i<-0.until(id.length);
+        d<-Numbers.laxMatches(id(i));
+        acc<-Seq(patch(i,d)))
+    yield acc
+}
+
+case object AccountId{
+  implicit def String2AccountId(id:String) = AccountId(id)
+}
+
+class Account private(val accountId: AccountId,val digits:Seq[RenderedDigit],val alternatives:Seq[AccountId]){
+  val isLegible = accountId.isLegible
+  
+  val isValid:Boolean = accountId.isValid
   
   val tabulatedString:String  = {
     val suffix = if(alternatives.nonEmpty) "AMB " +alternatives.mkString(" ")
                 else if(!isLegible) "ILL" 
                 else if(!isValid) "ERR" else ""
-    accountId + "\t"+ suffix
+    accountId.id + "\t"+ suffix
   }
 }
 
 object Account {
-  
-  def apply(original: String,digits:Seq[RenderedDigit],alternatives:Seq[String] = Seq()) :Account = {
+
+  def apply(original: AccountId,digits:Seq[RenderedDigit],alternatives:Seq[AccountId] = Seq()) :Account = {
     if(alternatives.isEmpty) new Account(original,digits,Seq())
     else if(alternatives.size==1) new Account(alternatives.head,digits,Seq())
     else new Account(original,digits,alternatives)
@@ -95,39 +124,19 @@ object Account {
   
   def parse(r:RenderedAccountNumber) :Either[String,Account] = Numbers.parseLine(r).right.map{x=>
     
-    val chars = x.map(Numbers.parseDigit).mkString
-    if (isValid(chars)) Account(chars,x) 
-    else if(isLegible(chars)){
-      Account(chars,x,getAlternates(chars))
+    val accountId:AccountId = x.map(Numbers.parseDigit).mkString
+    
+    if (accountId.isValid) Account(accountId,x) 
+    else if(accountId.isLegible){
+      Account(accountId,x,accountId.findSimilarAccounts().filter(_.isValid))
     }
-    else if(mightBecomeLegible(chars)){
-      val idx = chars.indexOf('?')
-      val alternates = Numbers.laxMatches(x(idx)).map(c=>chars.patch(idx,Seq(c),1)).filter(isValid)
-      Account(chars,x,alternates)  
+    else if(accountId.mightBecomeLegible){
+      val idx = accountId.id.indexOf('?')
+      val alternates = Numbers.laxMatches(x(idx)).map(c=>accountId.patch(idx,c)).filter(_.isValid)
+      Account(accountId,x,alternates)  
     }
-    else Account(chars,x)
+    else Account(accountId,x)
   }
   
-  def getAlternates(accountNumber: String) =
-    for(i<-0.until(accountNumber.length);
-        d<-Numbers.laxMatches(accountNumber(i));
-        acc<-Seq(accountNumber.patch(i,Seq(d),1))
-        if isValid(acc))
-    yield acc
-
-
-  private def isLegible(accountId:String) = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
-  private def mightBecomeLegible(accountId:String) = accountId.size == Numbers.characters_per_line && accountId.count(_=='?')<=1
-
-  private def isValid(accountId:String) = {
-    if(!isLegible(accountId)) false
-    else{
-      val checksum:Int = accountId.toCharArray.zip(1.to(9).reverse).map{
-        case (char,pos) =>
-          char.asDigit*pos
-      }.sum
-      checksum % 11 == 0
-    }
-  }
 }
 

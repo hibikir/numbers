@@ -2,7 +2,7 @@ package numbers
 
 import org.scalatest.FunSpec
 import scala.io.Source
-
+import AccountId._
 
 class NumbersSpec extends FunSpec {
 
@@ -35,25 +35,25 @@ class NumbersSpec extends FunSpec {
 
   describe("Account validation") {
     it("calculates checksums correctly") {
-      assert(Account("457508000",Seq()).isValid)
-      assert(!Account("664371495",Seq()).isValid)
+      assert(AccountId("457508000").isValid)
+      assert(!AccountId("664371495").isValid)
     }
 
     it("outputs report lines") {
-      assert(Account("457508000",Seq()).tabulatedString == "457508000\t")
-      assert(Account("664371495",Seq()).tabulatedString == "664371495\tERR")
-      assert(Account("45750?000",Seq()).tabulatedString == "45750?000\tILL")
+      assert(Account("457508000",Seq(),Seq()).tabulatedString == "457508000\t")
+      assert(Account("664371495",Seq(),Seq()).tabulatedString == "664371495\tERR")
+      assert(Account("45750?000",Seq(),Seq()).tabulatedString == "45750?000\tILL")
     }
     
     it("figures out alternatives with correct checksums"){
-      assert(Account.getAlternates("490067715").toSet == Set("490067115", "490067719", "490867715"))
+      assert(AccountId("490067715").findSimilarAccounts().filter(_.isValid).toSet == Set(AccountId("490067115"), AccountId("490067719"), AccountId("490867715")))
     }
 
     it("when an invalid scan has alternatives, it picks the one with the right checksum"){
       assert(Account.parse(List(
         " _  _  _  _  _  _  _  _  _ ",
         "|_||_||_||_||_||_||_||_||_|",
-        "|_  _| _| _| _| _| _| _| _|")).right.get.accountId === "899999999")
+        "|_  _| _| _| _| _| _| _| _|")).right.get.accountId === AccountId("899999999"))
 
     }
   }
