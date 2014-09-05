@@ -110,9 +110,10 @@ object Account {
   
   def getAlternates(accountNumber: String) =
     for(i<-0.until(accountNumber.length);
-        d<-Numbers.laxMatches(accountNumber(i))
-        if isValid(accountNumber.patch(i,Seq(d),1)
-        )) yield accountNumber.patch(i,Seq(d),1)
+        d<-Numbers.laxMatches(accountNumber(i));
+        acc<-Seq(accountNumber.patch(i,Seq(d),1))
+        if isValid(acc))
+    yield acc
 
 
   private def isLegible(accountId:String) = accountId.size == Numbers.characters_per_line && !accountId.contains('?')
