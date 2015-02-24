@@ -2,11 +2,11 @@ name := "numbers"
 
 version := "1.0"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-feature","-language:implicitConversions")
 
-libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.2.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
-libraryDependencies += "org.scalacheck"%% "scalacheck" % "1.11.5" % "test"
+libraryDependencies += "org.scalacheck"%% "scalacheck" % "1.12.2" % "test"
 
